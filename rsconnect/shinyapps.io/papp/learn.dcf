@@ -1,0 +1,10 @@
+name: learn
+title:
+username: papp
+account: papp
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 15599238
+bundleId: 10969079
+url: https://papp.shinyapps.io/learn/
+version: 1
