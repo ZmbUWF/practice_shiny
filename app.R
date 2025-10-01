@@ -3,8 +3,6 @@ library(bslib)
 library(RSQLite)
 library(tidyverse) 
 
-)
-
 # Define UI ----
 ui <- page_navbar(
   
