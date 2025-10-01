@@ -1,11 +1,19 @@
 library(shiny)
 library(bslib)
-library(RSQL)
 library(RSQLite)
 library(tidyverse) 
 
+# dataframe that holds usernames, passwords and other user data
+user_base <- tibble::tibble(
+  user = c("user1", "user2"),
+  password = c("pass1", "pass2"),
+  permissions = c("admin", "standard"),
+  name = c("User One", "User Two")
+)
+
 # Define UI ----
 ui <- page_navbar(
+  
   title = "Practice App",
   bg = "#2D89C8",
   inverse = TRUE,
@@ -19,38 +27,58 @@ ui <- page_navbar(
       card_footer("This is the end of the card")
     )
   ),
-  nav_panel(title = "Two", p("Second page content.")),
+  nav_panel(title = "Manage Databse", 
+            h3("Enter data below"),
+              card(
+                dateInput("date", label = h3("Enter Date of Birth:"), value = "2025-01-01"),
+
+                fluidRow(column(3, verbatimTextOutput("valueDate"))),
+                hr(),
+                textInput("text", label = h3("Enter Full Name:"), value = ""),
+ 
+                fluidRow(column(3, verbatimTextOutput("valueText"))),
+              ),
+            actionButton("action", label = "CLICK TO INSER INTO DATABSE"),
+            fluidRow(column(2, verbatimTextOutput("valueAction")))
+  )
 )
 
 # Define server logic ----
 server <- function(input, output) {
-  
   #Build the placeholder
-  con <- dbConnect(drv = RSQLite::SQLite(),
-                   dbname = "mydata.sqlite"
-                   )
+  con <- dbConnect(drv = RSQLite::SQLite(),dbname = "mydata.sqlite")
   
-  #Load the population table
-  dbWriteTable(conn = con, 
-               name = "population",
-               value = population,
-               append  = TRUE)
+  # Ensure the table exists
+  if(!"users" %in% dbListTables(con)) {
+    dbExecute(con, "CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT, dob TEXT)")
+  }
   
-  #Load the who table
-  dbWriteTable(conn = con, 
-               name = "who",
-               value = who,
-               append  = TRUE)
+  # Reactive trigger to refresh table
+  refresh <- reactiveVal(0)
   
-  # Show first few rows of "population"
+  # Show first few rows of users
   output$preview <- renderTable({
-    dbGetQuery(con, "SELECT * FROM population LIMIT 10")
+    refresh()  # depend on refresh
+    dbGetQuery(con, "SELECT * FROM users")
   })
+  
+  observeEvent(input$action, {
+    req(input$text)  # require name not empty
+    dob_str <- as.character(input$date)  # convert Date to string
+    dbExecute(con, "INSERT INTO users (name, dob) VALUES (?, ?)",
+              params = list(input$text, dob_str))  # <-- use dob_str, not input$dob_str
+    refresh(isolate(refresh()) + 1)  # trigger table refresh
+  })
+  
     
-    # Close DB connection when app stops
-    onStop(function() {
-      dbDisconnect(con)
-    })
+  output$valueDate <- renderPrint({ input$date })
+  output$valueText <- renderPrint({ input$text })
+  output$valueAction <- renderPrint({ input$action })
+  
+  # Close DB connection when app stops
+  onStop(function() {
+    dbDisconnect(con)
+  })
 }
 
 
