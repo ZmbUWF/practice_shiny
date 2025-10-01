@@ -3,12 +3,6 @@ library(bslib)
 library(RSQLite)
 library(tidyverse) 
 
-# dataframe that holds usernames, passwords and other user data
-user_base <- tibble::tibble(
-  user = c("user1", "user2"),
-  password = c("pass1", "pass2"),
-  permissions = c("admin", "standard"),
-  name = c("User One", "User Two")
 )
 
 # Define UI ----
@@ -16,7 +10,7 @@ ui <- page_navbar(
   
   title = "Practice App",
   bg = "#2D89C8",
-  inverse = TRUE,
+  inverse = theme = bs_theme(bg = "black", fg = "white"),
   nav_panel(title = "Database View",
     h3("Practice Database"),
     p("See current data in database below."),
