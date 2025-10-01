@@ -8,7 +8,6 @@ ui <- page_navbar(
   
   title = "Practice App",
   bg = "#2D89C8",
-  inverse = theme = bs_theme(bg = "black", fg = "white"),
   nav_panel(title = "Database View",
     h3("Practice Database"),
     p("See current data in database below."),
