@@ -4,6 +4,12 @@ library(RMySQL)
 library(shinyauthr)
 library(shinyjs)
 library(magrittr)
+library(config)
+
+# Load configuration
+# By default, it loads the 'default' environment
+# You can specify environment with: config::get(config = "production")
+db_config <- config::get("database")
 
 # dataframe that holds usernames, passwords and other user data
 user_base <- tibble::tibble(
@@ -123,15 +129,15 @@ server <- function(input, output, session) {
     }
   })
   
-  # Build the MySQL database connection
+  # Build the MySQL database connection using config values
   con <- dbConnect(
     MySQL(),
-    host = "mysql-10ef0821-shiny-0e09.g.aivencloud.com",
-    port = 19625,
-    dbname = "defaultdb",
-    user = "avnadmin",
-    password = "AVNS_8IXRc4DJH6EGDS3QxyU",
-    ssl = TRUE
+    host = db_config$host,
+    port = db_config$port,
+    dbname = db_config$dbname,
+    user = db_config$user,
+    password = db_config$password,
+    ssl = db_config$ssl
   )
   
   # Ensure the updatedUsers table exists with added_by column
